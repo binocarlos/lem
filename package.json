@@ -1,0 +1,30 @@
+{
+  "name": "lem",
+  "version": "0.0.1",
+  "description": "telemetry database for time-series data using LevelDB and node.js",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/binocarlos/lem.git"
+  },
+  "keywords": [
+    "telemetry",
+    "database",
+    "time",
+    "series",
+    "leveldb"
+  ],
+  "devDependencies": {
+    "mocha": "~1.14.0",
+    "should": "~2.1.0"
+  },
+  "author": "Kai Davenport",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/binocarlos/lem/issues"
+  },
+  "homepage": "https://github.com/binocarlos/lem"
+}

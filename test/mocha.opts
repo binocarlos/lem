@@ -1,0 +1,5 @@
+--reporter spec
+--timeout 300
+--require should
+--growl
+--ui bdd

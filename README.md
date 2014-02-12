@@ -67,12 +67,13 @@ returns:
 }
 ```
 
-Two extra fields are added to the results for each node:
+Three extra fields are added to the results for each node:
 
+ * id
  * count
  * modified
 
-Count represents how many values are in the nodes history - modified is the timestamp of the most recent value.
+id is the node id - count represents how many values are in the nodes history - modified is the timestamp of the most recent value.
 
 ### POST /history
 
