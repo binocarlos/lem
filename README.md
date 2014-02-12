@@ -1,7 +1,7 @@
 lem
 ===
 
-telemetry database for time-series data using LevelDB
+telemetry database for time-series data using LevelDB and node.js
 
 ## plan
 
@@ -103,8 +103,8 @@ returns:
 
 ```json
 {
-	id:'tracktube.cars.red5.speed',
-	results:[[
+	"id":"tracktube.cars.red5.speed",
+	"results":[[
 		123456,70
 	],[
 		123457,72
@@ -130,8 +130,8 @@ returns:
 
 ```json
 {
-	id:'tracktube.cars.red5.speed',
-	results:[[
+	"id":"tracktube.cars.red5.speed",
+	"results":[[
 		123458,74
 	],[
 		123459,75
