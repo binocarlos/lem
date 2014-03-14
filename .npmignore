@@ -20,3 +20,4 @@ Icon?
 # nodejs npm modules
 /node_modules
 build
+test/tempdb

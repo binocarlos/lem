@@ -26,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/binocarlos/lem/issues"
   },
-  "homepage": "https://github.com/binocarlos/lem"
+  "homepage": "https://github.com/binocarlos/lem",
+  "dependencies": {
+    "level": "~0.18.0"
+  }
 }

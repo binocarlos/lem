@@ -1,8 +1,7 @@
 var EventEmitter = require('events').EventEmitter
 var util = require('util')
-var Node = require('./node')
 
-function Lem(db, options){
+function Node(path){
 	EventEmitter.call(this)
 
 	if(!db){
@@ -16,10 +15,10 @@ function Lem(db, options){
 	this._options = options
 }
 
-util.inherits(Lem, EventEmitter)
+util.inherits(Node, EventEmitter)
 
-module.exports = Lem
+module.exports = Node
 
-Lem.prototype.node = function(path){
+Node.prototype.record = function(value, timestamp){
 	
 }
