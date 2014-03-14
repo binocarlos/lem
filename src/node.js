@@ -1,24 +1,29 @@
 var EventEmitter = require('events').EventEmitter
 var util = require('util')
 
-function Node(path){
+function Node(db, path){
 	EventEmitter.call(this)
 
 	if(!db){
 		throw new Error('db required')
 	}
 
-	options = options || {}
-	options.sep = options.sep || '\xff'
+	if(!path){
+		throw new Error('path required')
+	}
 
 	this._db = db
-	this._options = options
+	this._path = path
 }
 
 util.inherits(Node, EventEmitter)
 
 module.exports = Node
 
-Node.prototype.record = function(value, timestamp){
-	
+Node.prototype.meta = function(value, timestamp){
+	this._db.get()
+}
+
+Node.prototype.destroy = function(){
+	this.removeAllListeners();
 }
