@@ -3,6 +3,8 @@ lem
 
 ![lem logo](graphics/logosmall.png "Lem Logo")
 
+![Build status](https://api.travis-ci.org/binocarlos/lem.png)
+
 database for time-series data using LevelDB and node.js
 
 ## installation
