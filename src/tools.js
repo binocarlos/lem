@@ -1,9 +1,13 @@
 function parsedots(path){
-	return (path || '').replace(/\./g, '~');
+	return (path || '').replace(/[\.\/]/g, '~');
 }
 
 function getdots(path){
 	return (path || '').replace(/\~/g, '.');
+}
+
+function getslashes(path){
+	return (path || '').replace(/\~/g, '/');
 }
 
 function levelrange(start, end){

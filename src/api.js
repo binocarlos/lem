@@ -35,7 +35,6 @@ Lem.prototype.index = function(key, meta, done){
 		meta = null;
 	}
 
-	this.emit('index', key, meta);
 	this._db.put(tools.parsedots('keys.' + key), meta || '', done);
 }
 

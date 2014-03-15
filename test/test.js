@@ -97,9 +97,14 @@ describe('lem', function(){
       var lem = new Lem(db);
 
       var hit = {};
+      var index = {};
 
       lem.on('data', function(data){
         hit[data.key] = data;
+      })
+
+      lem.on('index', function(key, data){
+        index[key] = data;
       })
 
       async.series([
@@ -124,6 +129,7 @@ describe('lem', function(){
           hit[lem.tools.parsedots('keys.cars.red5.address.postcode')].value.should.equal('sw10');
           hit[lem.tools.parsedots('keys.cars.red5.height')].value.should.equal(11);
           hit[lem.tools.parsedots('keys.cars.red5.weight')].value.should.equal(12);
+          index['cars.red5.speed'].should.equal(10);
           next();
         }
       ], done)
@@ -143,31 +149,38 @@ describe('lem', function(){
 
       var counter = 0;
       var total = 0;
+      var midtotal = 0;
 
       var midtime = null;
       var endtime = null;
 
       function docheckrange(){
         var hitc = 0;
+        var hitt = 0;
         lem.valuestream('cars.red5.speed', {          
           start:midtime,
           end:endtime
         }).pipe(through(function(data){
           hitc++;
+          hitt += data.value;
         }, function(){
           hitc.should.equal(5);
+          hitt.should.equal(midtotal);
           done();
         }))
       }
 
       function docheckall(){
         var hitc = 0;
+        var hitt = 0;
         lem.valuestream('cars.red5.speed', {          
 
         }).pipe(through(function(data){
           hitc++;
+          hitt += data.value;
         }, function(){
           hitc.should.equal(10);
+          hitt.should.equal(total);
           docheckrange();
         }))
       }
@@ -183,6 +196,9 @@ describe('lem', function(){
         counter++;
         if(counter==6){
           midtime = new Date().getTime();
+        }
+        if(counter>=6){
+          midtotal += speed;
         }
         recorder(speed, function(){
           setTimeout(dorecord, 100);
