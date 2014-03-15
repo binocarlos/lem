@@ -29,12 +29,12 @@ describe('lem', function(){
 
     it('should throw if no leveldb or options', function(){
       (function(){
-        var lem = Lem();  
+        var lem = new Lem();  
       }).should.throw('db required');
     })
 
     it('should create a lem server which should be an event emitter', function(done){
-      var lem = Lem(db);
+      var lem = new Lem(db);
 
       lem.on('apples', done);
       lem.emit('apples');
@@ -42,46 +42,38 @@ describe('lem', function(){
 
   })
 
-  describe('keys', function(){
-
-    it('should convert dots to level keys', function(){
-      var lem = Lem(db);
-      var key = lem.key('address.house');
-      key.should.equal(address + '\xff' + house);
-    })
-
-  })
 
   describe('index', function(){
     
 
     it('should list all the nodes', function(done){
-      var lem = Lem(db);
+      var lem = new Lem(db);
 
       async.series([
         function(next){
-          lem.save('cars.red5.speed', 10, next);
+          lem.indexNode('cars.red5.speed', 10, next);
         },
 
         function(next){
-          lem.save('cars.red5.height', 11, next);
+          lem.indexNode('cars.red5.height', 11, next);
         },
 
         function(next){
-          lem.save('cars.red5.weight', 12, next);
+          lem.indexNode('cars.red5.weight', 12, next);
         },
 
         function(next){
           var nodes = {};
           lem.index('cars.red5').pipe(through(function(data){
-            var parts = data.split(':');
-            var path = parts[0];
-            var count = parts[1];
-            nodes[path] = count;
+            console.log('-------------------------------------------');
+            console.log('index');
+            console.dir(data);
+
+            nodes[data.key] = data.value;
           }, function(){
-            nodes['speed'].should.equal(1);
-            nodes['height'].should.equal(1);
-            nodes['weight'].should.equal(1);
+            nodes['speed'].should.equal('10');
+            nodes['height'].should.equal('11');
+            nodes['weight'].should.equal('12');
             Object.keys(nodes).length.should.equal(3);
             done();
           }))
@@ -92,16 +84,44 @@ describe('lem', function(){
 
   })
 
-  describe('field', function(){
+  describe('recorder', function(){
 
-    
+    this.timeout(2000);
 
-    it('should have the right key', function(done){
-      var lem = Lem(db);
+    it('should save values', function(done){
+      var lem = new Lem(db);
+
+      var recorder = lem.recorder('cars.red5.speed');
+
+      var counter = 0;
+
+      function docheck(){
+        console.log('-------------------------------------------');
+        console.log('cjheck');
+        lem.values('cars.red5.speed').pipe(through(function(data){
+          console.log('-------------------------------------------');
+          console.log('data here');
+          console.dir(data);
+        }, function(){
+          console.log('-------------------------------------------');
+          console.log('end');
+        }))
+      }
+
+      function dorecord(){
+        if(counter>10){
+          docheck();
+          return;
+        }
+        var speed = 50 + Math.round(Math.random()*50);
+        recorder(speed, function(){
+          counter++;
+          setTimeout(dorecord, 100);
+        })
+
+      }
       
-      var node = lem.field('cars.red5.speed');
-      var field = node.field('speed');
-      field.key().should.equal(cars + '\xff' + red5);
+      dorecord();
       
     })
 
@@ -115,7 +135,7 @@ describe('lem', function(){
 
     before(function(done){
       this.timeout(1000);
-      lem = Lem(db);
+      lem = new Lem(db);
       server = http.createServer(lem.http());
       server.listen(8080, done)
     })
