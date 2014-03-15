@@ -1,146 +1,275 @@
 lem
 ===
 
-telemetry database for time-series data using LevelDB and node.js
+![lem logo](graphics/logosmall.png "Lem Logo")
 
-## plan
+database for time-series data using LevelDB and node.js
 
-A 'node' is an entity in a property tree that has a history of values changing over time.
-
-Nodes are identified by pathname - either dot or slash delimeted:
+## installation
 
 ```
-tracktube.cars.red5.speed
+$ npm install lem
 ```
 
-and
+## usage
+
+```js
+var lem = require('lem');
+var level = require('level');
+
+// create a new leveldb - this can also be a sub-level
+var leveldb = level('/tmp/lemtest');
+
+// create a new lem store using the leveldb
+var lemdb = lem(db);
+
+// when nodes are indexed
+lemdb.on('index', function(key, meta){
+
+})
+
+// a live stream from the database
+lemdb.on('data', function(data){
+
+})
+
+// nodes are represented by keys
+var key = 'myhouse.kitchen.fridge.temperature';
+
+// index a node with some meta data
+lemdb.index(key, 'My Fridge Temp');
+
+// create a recorder which will write data to the node
+var temp = lemdb.recorder(key);
+
+// write a value every second
+setInterval(function(){
+	temp(Math.random()*100);
+}, 1000)
 
 ```
-tracktube/cars/red5/speed
+
+## timestamps
+
+When values are written to recorders - they are timestamped.  Sometimes - more acurate timestamping (like a GPS source) is used - you can provide the timestamp to the recorder:
+
+```js
+var temp = lemdb.recorder('timestamp.test');
+setInterval(function(){
+	// get a custom timestamp from somewhere - the current time is the default
+	var timestamp = new Date().getTime();
+	temp(Math.random()*100, timestamp);
+}, 1000)
 ```
 
-are the same nodes - i.e. a variable that has a history of values.
+## index
 
-LevelDB is perfect for time-series data because it saves to disk in key order.
+You can read the index from any point in the tree - it returns a ReadStream of the keys that have been indexed:
 
-The keys for actual values will include the timestamp for the value.
+```js
+...
+var through = require('through');
 
-The timestamp is either sent with the value or added on insert.
+// index a key into the tree
+lemdb.index('cars.red5.speed', 'The speed of the car', function(){
+	var keysfound = {};
 
-An example of a full key for the above node:
-
-```
-tracktube/cars/red5/speed/123456
-```
-
-This is one value and can be read as 'the speed for tracktube.cars.red5 at timestamp: 123456'
-
-One limitation of lem is one value per node per millisecond.
-
-If you need a telemetry system with more resolution than 1/1000th of a second - lem is probably not for you : )
-
-
-### POST /
-
-Add/update a node at the given key - you can save meta data to nodes this way:
-
-```
-$ curl -X POST -d '{"meta":"apples"}' http://lem.digger.io/tracktube/cars/red5/speed
+	// keys returns a readstream of objects each with a 'key' and 'data' property
+	lemdb.keys('cars.red5').pipe(through(function(data){
+		keysfound[data.key] = data.value;
+	}, function(){
+		console.log('Meta: ' + keysfound.speed);
+	})
+})
 ```
 
-### GET /
-
-Returns the data for a node at a key:
+This will log:
 
 ```
-$ curl http://lem.digger.io/tracktube/cars/red5/speed
+Meta: The speed of the car
 ```
 
-returns:
+## valuestream
 
-```json
+Create a ReadStream of telemetry values for a node - you can specify start and end keys to view windows in time:
+
+```js
+
+// create a range - this can be a 'session' to make meaningful groups within lem
+var sessionstart = new Date('04/05/2013 12:34:43');
+var sessionend = new Date('04/05/2013 12:48:10');
+var counter = 0;
+var total = 0;
+
+var secs = (sessionend.getTime() - sessionstart.getTime()) / 1000;
+
+lemdb.valuestream('cars.red5.speed', {          
+	start:sessionstart.getTime(),
+	end:sessionend.getTime()
+}).pipe(through(function(data){
+
+	// this is the timestamp of the value
+	var key = data.key;
+
+	// this is the actual value
+	var value = data.value;
+
+	// map-reduce beginnings
+	total += value;
+	counter++;
+}, function(){
+
+	var avg = 0;
+
+	if(counter>0){
+		avg = total / counter;
+	}
+
+	console.log('average speed of: ' + avg);
+	console.log('data points: ' + total);
+	console.log('time period: ' + secs + ' secs');
+	
+}))
+```
+
+## api
+
+## var lem = new Lem(leveldb);
+
+Create a new lem database from the provided [leveldb](https://github.com/rvagg/node-levelup).  This can be a [level-sublevel](https://github.com/dominictarr/level-sublevel) so you can partition lem into an existing database.
+
+```js
+var lem = require('lem');
+var level = require('level');
+
+var leveldb = level('/tmp/mylem');
+var lemdb = lem(leveldb);
+```
+
+## lemdb.index(path, meta, done)
+
+Write a node and some meta data to the index. 
+
+The index is used to build a tree of key-values that exist without having to traverse the time-stamped keys.
+
+The stream returned can be used to build any kind of data structure you want (list, tree, etc).
+
+The meta data for each node is saved as a string - you can use your own encoding (e.g. JSON).
+
+Create some indexes:
+
+```js
+lemdb.index('myhouse.kitchen.fridge.temperature', '{"title":"Fridge Temp","owner":344}');
+lemdb.index('myhouse.kitchen.thermostat.temperature', '{"title":"Stat Temp","owner":344}');
+```
+
+## lemdb.keys(path)
+
+keys returns a ReadStream of all keys in the index beneath the key you provide.
+
+For example - convert the stream into a tree representing all nodes in the kitchen:
+
+```js
+...
+var through = require('through');
+var tree = {};
+lemdb.keys('myhouse.kitchen').pipe(through(function(data){
+	tree[data.key] = data.value;
+}, function(){
+	console.dir(tree);
+}))
+```
+
+This outputs:
+
+```js
 {
-	"id":"tracktube.cars.red5.speed",
-	"meta":"apples",
-	"count":1242,
-	"modified":23238282
+	"fridge.temperature":'{"title":"Fridge Temp","owner":344}',
+	"thermostat.temperature":'{"title":"Stat Temp","owner":344}'
 }
 ```
 
-Three extra fields are added to the results for each node:
+## lemdb.recorder(path)
 
- * id
- * count
- * modified
+A recorder is used to write time-series data to a node.
 
-id is the node id - count represents how many values are in the nodes history - modified is the timestamp of the most recent value.
+You create it with the path of the node:
 
-### POST /history
-
-Add a new value for a node - if the request body is JSON the object should contain:
-
- * value
- * timestamp
-
-```
-$ curl -X POST -d '{"value":76,"timestamp":123460}' http://lem.digger.io/tracktube/cars/red5/speed/history
+```js
+var recorder = lemdb.recorder('myhouse.kitchen.fridge.temperature');
 ```
 
-if the request body is not JSON - the body is used as the value and a timestamp is added from the servers local time:
+## recorder(value, [timestamp], [done])
 
-```
-$ curl -X POST -d '76' http://lem.digger.io/tracktube/cars/red5/speed/history
-```
+The recorder itself is a function that you run with a value and optional timestamp and callback.
 
-### GET /history
+If no timestamp is provided a default is created:
 
-Returns an array of values for a node:
-
-```
-$ curl http://lem.digger.io/tracktube/cars/red5/speed/history
+```js
+var timestamp = new Date().getTime();
 ```
 
-returns:
+The callback is run once the value has been committed to disk:
 
-```json
-{
-	"id":"tracktube.cars.red5.speed",
-	"results":[[
-		123456,70
-	],[
-		123457,72
-	],[
-		123458,74
-	],[
-		123459,75
-	],[
-		123460,76
-	]
+```js
+
+// a function to get an accurate time-stamp from somewhere
+function getProperTime(){
+	return ...;
 }
+
+// a function to return the current value of an external sensor
+function getSensorValue(){
+	return ...;
+}
+var recorder = lemdb.recorder('myhouse.kitchen.fridge.temperature');
+
+// sample the value every second
+setInterval(function(){
+	var value = getSensorValue();
+	var timestamp = getProperTime();
+	recorder(value, timestamp, function(){
+		console.log(timestamp + ':' + value);
+	})
+}, 1000)
+
 ```
 
-### get /history?from=&to=
+## events
 
-You can control the time-period that results are returned for using the from and to query parameters
+### lemdb.on('index', function(key, meta){})
 
+the 'index' event is emitted when a node is added to the index:
+
+```js
+lemdb.on('index', function(key, meta){
+	console.log('the key is: ' + key);
+
+	// the meta is a string
+	var obj = JSON.parse(meta);
+	console.dir(obj);
+})
 ```
-$ curl http://lem.digger.io/tracktube/cars/red5/speed/history?from=123458&to=123459
+
+### lemdb.on('data', function(key, value){})
+	
+This is a livestream from leveldb and so contains a full description of the operation:
+
+```js
+lemdb.on('index', function(data){
+	console.dir(data);	
+})
 ```
 
-returns:
+This would log:
 
-```json
-{
-	"id":"tracktube.cars.red5.speed",
-	"results":[[
-		123458,74
-	],[
-		123459,75
-	]
+```js
+{ type: 'put',
+  key: 'values~cars~red5~speed~1394886656496',
+  value: '85'
 }
 ```
 
 ## license
 
 MIT
-

@@ -1,26 +1,7 @@
 lem
 ===
 
-database for time-series data using LevelDB and node.js
-
-## installation
-
-```
-$ npm install lem
-```
-
-## usage
-
-```js
-var Lem = require('lem');
-var level = require('level');
-
-// create a new leveldb - this can also be a sub-level
-var db = level('/tmp/lemtest');
-
-var lem = new Lem(db)
-
-```
+telemetry database for time-series data using LevelDB and node.js
 
 ## plan
 

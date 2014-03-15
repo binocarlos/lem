@@ -4,16 +4,23 @@ var liveStream = require('level-live-stream');
 var through = require('through');
 var tools = require('./tools');
 
-function Lem(db, options){
-	var self = this
-
-	EventEmitter.call(this)
+module.exports = function(db, options){
 
 	if(!db){
 		throw new Error('db required')
 	}
 
 	options = options || {}
+
+	return new Lem(db, options);
+}
+
+module.exports.tools = tools;
+
+function Lem(db, options){
+	var self = this
+
+	EventEmitter.call(this)
 
 	this._db = db
 	this._options = options
@@ -22,12 +29,9 @@ function Lem(db, options){
 	this._livestream.on('data', function(data){
 		self.emit('data', data);
 	})
-	this.tools = tools;
 }
 
 util.inherits(Lem, EventEmitter)
-
-module.exports = Lem;
 
 Lem.prototype.index = function(key, meta, done){
 	if(arguments.length<=2){

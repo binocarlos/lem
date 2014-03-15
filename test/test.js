@@ -1,4 +1,4 @@
-var Lem = require('../src/index');
+var lem = require('../src/index');
 var level = require('level');
 var hyperquest = require('hyperquest');
 var concat = require('concat-stream');
@@ -9,40 +9,47 @@ var wrench = require('wrench');
 
 describe('lem', function(){
 
-  var db;
+  var leveldb;
 
   beforeEach(function(done){
     this.timeout(1000);
     wrench.rmdirSyncRecursive('/tmp/lemtesttempdb', true);
     level('/tmp/lemtesttempdb', {}, function(err, ldb){
       if (err) throw err
-      db = ldb
+      leveldb = ldb
       done();
     });
   })
 
   afterEach(function(done){
     this.timeout(1000);
-    db.close(done);
+    leveldb.close(done);
   })
 
   describe('constructor', function(){
   
     it('should be a function', function(){
-      Lem.should.be.type('function');
+      lem.should.be.type('function');
+    })
+
+    it('should expose the tools', function(){
+      lem.tools.parsedots.should.be.type('function');
+      lem.tools.getdots.should.be.type('function');
+      lem.tools.querykeys.should.be.type('function');
+      lem.tools.levelrange.should.be.type('function');
     })
 
     it('should throw if no leveldb or options', function(){
       (function(){
-        var lem = new Lem();  
+        var lemdb = lem();
       }).should.throw('db required');
     })
 
     it('should create a lem server which should be an event emitter', function(done){
-      var lem = new Lem(db);
+      var lemdb = lem(leveldb);
 
-      lem.on('apples', done);
-      lem.emit('apples');
+      lemdb.on('apples', done);
+      lemdb.emit('apples');
     })
 
   })
@@ -52,28 +59,30 @@ describe('lem', function(){
     
 
     it('should list all the nodes that have been indexed', function(done){
-      var lem = new Lem(db);
+      var lemdb = lem(leveldb);
+
+
 
       async.series([
         function(next){
-          lem.index('cars.red5.speed', 10, next);
+          lemdb.index('cars.red5.speed', 10, next);
         },
 
         function(next){
-          lem.index('cars.red5.address.postcode', 'sw10', next);
+          lemdb.index('cars.red5.address.postcode', 'sw10', next);
         },
 
         function(next){
-          lem.index('cars.red5.height', 11, next);
+          lemdb.index('cars.red5.height', 11, next);
         },
 
         function(next){
-          lem.index('cars.red5.weight', 12, next);
+          lemdb.index('cars.red5.weight', 12, next);
         },
 
         function(next){
           var nodes = {};
-          lem.keys('cars.red5').pipe(through(function(data){
+          lemdb.keys('cars.red5').pipe(through(function(data){
             nodes[data.key] = data.value;
           }, function(){
             nodes['speed'].should.equal('10');
@@ -94,34 +103,34 @@ describe('lem', function(){
     
 
     it('should emit events as data is written', function(done){
-      var lem = new Lem(db);
+      var lemdb = lem(leveldb);
 
       var hit = {};
       var index = {};
 
-      lem.on('data', function(data){
+      lemdb.on('data', function(data){
         hit[data.key] = data;
       })
 
-      lem.on('index', function(key, data){
+      lemdb.on('index', function(key, data){
         index[key] = data;
       })
 
       async.series([
         function(next){
-          lem.index('cars.red5.speed', 10, next);
+          lemdb.index('cars.red5.speed', 10, next);
         },
 
         function(next){
-          lem.index('cars.red5.address.postcode', 'sw10', next);
+          lemdb.index('cars.red5.address.postcode', 'sw10', next);
         },
 
         function(next){
-          lem.index('cars.red5.height', 11, next);
+          lemdb.index('cars.red5.height', 11, next);
         },
 
         function(next){
-          lem.index('cars.red5.weight', 12, next);
+          lemdb.index('cars.red5.weight', 12, next);
         },
 
         function(next){
@@ -143,9 +152,9 @@ describe('lem', function(){
     this.timeout(5000);
 
     it('should save values', function(done){
-      var lem = new Lem(db);
+      var lemdb = lem(leveldb);
 
-      var recorder = lem.recorder('cars.red5.speed');
+      var recorder = lemdb.recorder('cars.red5.speed');
 
       var counter = 0;
       var total = 0;
@@ -157,7 +166,7 @@ describe('lem', function(){
       function docheckrange(){
         var hitc = 0;
         var hitt = 0;
-        lem.valuestream('cars.red5.speed', {          
+        lemdb.valuestream('cars.red5.speed', {          
           start:midtime,
           end:endtime
         }).pipe(through(function(data){
@@ -173,7 +182,7 @@ describe('lem', function(){
       function docheckall(){
         var hitc = 0;
         var hitt = 0;
-        lem.valuestream('cars.red5.speed', {          
+        lemdb.valuestream('cars.red5.speed', {          
 
         }).pipe(through(function(data){
           hitc++;
@@ -212,35 +221,6 @@ describe('lem', function(){
 
   })
 
-
-  describe('http server', function(){
-
-    var server;
-    var lem;
-
-/*
-    before(function(done){
-      this.timeout(1000);
-      lem = new Lem(db);
-      server = http.createServer(lem.http());
-      server.listen(8080, done)
-    })
-
-    it('should save serve the meta data', function(done){
-      
-      lem.meta('hello lem', function(err){
-        if(err) throw err
-
-        hyperquest('http://127.0.0.1:8080/v1/meta')
-        .pipe(concat(function(meta){
-          meta.should.equal('hello lem');
-          done();
-        }))
-        
-      })
-    })
-*/
-  })
 	
 })
 
