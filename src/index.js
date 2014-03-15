@@ -1,8 +1,8 @@
 var EventEmitter = require('events').EventEmitter
 var util = require('util')
-var Node = require('./node')
 var liveStream = require('level-live-stream');
 var through = require('through');
+var tools = require('./tools');
 
 function Lem(db, options){
 	EventEmitter.call(this)
@@ -23,64 +23,57 @@ function Lem(db, options){
 	this._livestream.on('data', function(data){
 		self.emit('data', data);
 	})
+	this.tools = tools;
 }
 
 util.inherits(Lem, EventEmitter)
 
 module.exports = Lem;
 
+Lem.prototype.index = function(key, meta, done){
+	if(arguments.length<=2){
+		done = meta;
+		meta = null;
+	}
 
-Lem.prototype.removeNode = function(key, done){
+	this._db.put(tools.parsedots('keys.' + key), meta || '', done);
+}
+
+Lem.prototype.remove = function(key, done){
 	// tbc
 	throw new Error('not done yet')
 }
 
-Lem.prototype.record = function(path, value, done){
-	this._db.put(path, value.toString(), done);
-}
-
 Lem.prototype.recorder = function(path){
 	var self = this;
+	path = tools.parsedots('values.' + (path || ''));
 	return function(value, done){
-		self.record(path, value, done);
+		self._db.put(path, value.toString(), done);
 	}
 }
 
-Lem.prototype.values = function(path, time_window){
-	path = 'data.' + path;
-	var start = path;
-	var end = path;
-	if(time_window && time_window.from){
-		start += '.' + time_window.from;
-	}
-	if(time_window && time_window.to){
-		end += '.' + time_window.to;
-	}
-	if(!time_window){
-		end += '\xff';
-	}
+Lem.prototype.valuestream = function(path, start, end){
+	var keys = tools.querykeys(path, start, end);
 	console.log('-------------------------------------------');
-	console.dir(start);
+	console.dir(keys);
+	/*
 	return this._db.createReadStream({
-		/*
+		
 		keyEncoding:'ascii',
 		start:start,
 		end:end
-		*/
+		
 	})
+	*/
 }
 
-Lem.prototype.index = function(path){
+Lem.prototype.keys = function(path){
 	var self = this;
-	path = path || '';
-	path = 'nodes' + (path ? '.' + path  : '');
-	return this._db.createReadStream({
-		keyEncoding:'ascii',
-		start:path,
-		end:path + '\xff'
-	}).pipe(through(function(data){
-		console.log(data.key.toString());
-		data.key = data.key.toString().substr(path.length+1);
+	var dotpath = 'keys.' + (path || '');
+	var range = tools.querykeys(dotpath);
+	return this._db.createReadStream(range)
+	.pipe(through(function(data){
+		data.key = tools.getdots(data.key.toString()).substr(dotpath.length+1);
 		data.value = data.value.toString();
 		if(data.value.charAt(0)=='{'){
 			data.value = JSON.parse(data.value);
@@ -89,15 +82,3 @@ Lem.prototype.index = function(path){
 	}))
 }
 
-Lem.prototype.indexNode = function(key, meta, done){
-	if(arguments.length<=2){
-		done = meta;
-		meta = null;
-	}
-
-	if(typeof(meta)!='string'){
-		meta = JSON.stringify(meta);
-	}
-
-	this._db.put('nodes.' + key, meta || '', done);
-}

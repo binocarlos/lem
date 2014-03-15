@@ -11,7 +11,7 @@ describe('lem', function(){
 
   var db;
 
-  before(function(done){
+  beforeEach(function(done){
     this.timeout(1000);
     wrench.rmdirSyncRecursive('/tmp/lemtesttempdb', true);
     level('/tmp/lemtesttempdb', {}, function(err, ldb){
@@ -19,6 +19,11 @@ describe('lem', function(){
       db = ldb
       done();
     });
+  })
+
+  afterEach(function(done){
+    this.timeout(1000);
+    db.close(done);
   })
 
   describe('constructor', function(){
@@ -43,40 +48,83 @@ describe('lem', function(){
   })
 
 
-  describe('index', function(){
+  describe('keys', function(){
     
 
-    it('should list all the nodes', function(done){
+    it('should list all the nodes that have been indexed', function(done){
       var lem = new Lem(db);
 
       async.series([
         function(next){
-          lem.indexNode('cars.red5.speed', 10, next);
+          lem.index('cars.red5.speed', 10, next);
         },
 
         function(next){
-          lem.indexNode('cars.red5.height', 11, next);
+          lem.index('cars.red5.address.postcode', 'sw10', next);
         },
 
         function(next){
-          lem.indexNode('cars.red5.weight', 12, next);
+          lem.index('cars.red5.height', 11, next);
+        },
+
+        function(next){
+          lem.index('cars.red5.weight', 12, next);
         },
 
         function(next){
           var nodes = {};
-          lem.index('cars.red5').pipe(through(function(data){
-            console.log('-------------------------------------------');
-            console.log('index');
-            console.dir(data);
-
+          lem.keys('cars.red5').pipe(through(function(data){
             nodes[data.key] = data.value;
           }, function(){
             nodes['speed'].should.equal('10');
             nodes['height'].should.equal('11');
             nodes['weight'].should.equal('12');
-            Object.keys(nodes).length.should.equal(3);
+            nodes['address.postcode'].should.equal('sw10');
+            Object.keys(nodes).length.should.equal(4);
             done();
           }))
+        }
+      ], done)
+      
+    })
+
+  })
+
+  describe('events', function(){
+    
+
+    it('should emit events as data is written', function(done){
+      var lem = new Lem(db);
+
+      var hit = {};
+
+      lem.on('data', function(data){
+        hit[data.key] = data;
+      })
+
+      async.series([
+        function(next){
+          lem.index('cars.red5.speed', 10, next);
+        },
+
+        function(next){
+          lem.index('cars.red5.address.postcode', 'sw10', next);
+        },
+
+        function(next){
+          lem.index('cars.red5.height', 11, next);
+        },
+
+        function(next){
+          lem.index('cars.red5.weight', 12, next);
+        },
+
+        function(next){
+          hit[lem.tools.parsedots('keys.cars.red5.speed')].value.should.equal(10);
+          hit[lem.tools.parsedots('keys.cars.red5.address.postcode')].value.should.equal('sw10');
+          hit[lem.tools.parsedots('keys.cars.red5.height')].value.should.equal(11);
+          hit[lem.tools.parsedots('keys.cars.red5.weight')].value.should.equal(12);
+          next();
         }
       ], done)
       
@@ -98,7 +146,7 @@ describe('lem', function(){
       function docheck(){
         console.log('-------------------------------------------');
         console.log('cjheck');
-        lem.values('cars.red5.speed').pipe(through(function(data){
+        lem.valuestream('cars.red5.speed').pipe(through(function(data){
           console.log('-------------------------------------------');
           console.log('data here');
           console.dir(data);
@@ -133,6 +181,7 @@ describe('lem', function(){
     var server;
     var lem;
 
+/*
     before(function(done){
       this.timeout(1000);
       lem = new Lem(db);
@@ -153,7 +202,7 @@ describe('lem', function(){
         
       })
     })
-
+*/
   })
 	
 })
