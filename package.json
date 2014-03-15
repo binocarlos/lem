@@ -1,6 +1,6 @@
 {
   "name": "lem",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "telemetry database for time-series data using LevelDB and node.js",
   "main": "src/index.js",
   "scripts": {
