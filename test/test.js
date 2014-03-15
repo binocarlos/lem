@@ -134,7 +134,7 @@ describe('lem', function(){
 
   describe('recorder', function(){
 
-    this.timeout(2000);
+    this.timeout(5000);
 
     it('should save values', function(done){
       var lem = new Lem(db);
@@ -142,28 +142,49 @@ describe('lem', function(){
       var recorder = lem.recorder('cars.red5.speed');
 
       var counter = 0;
+      var total = 0;
 
-      function docheck(){
-        console.log('-------------------------------------------');
-        console.log('cjheck');
-        lem.valuestream('cars.red5.speed').pipe(through(function(data){
-          console.log('-------------------------------------------');
-          console.log('data here');
-          console.dir(data);
+      var midtime = null;
+      var endtime = null;
+
+      function docheckrange(){
+        var hitc = 0;
+        lem.valuestream('cars.red5.speed', {          
+          start:midtime,
+          end:endtime
+        }).pipe(through(function(data){
+          hitc++;
         }, function(){
-          console.log('-------------------------------------------');
-          console.log('end');
+          hitc.should.equal(5);
+          done();
+        }))
+      }
+
+      function docheckall(){
+        var hitc = 0;
+        lem.valuestream('cars.red5.speed', {          
+
+        }).pipe(through(function(data){
+          hitc++;
+        }, function(){
+          hitc.should.equal(10);
+          docheckrange();
         }))
       }
 
       function dorecord(){
-        if(counter>10){
-          docheck();
+        if(counter>=10){
+          endtime = new Date().getTime();
+          docheckall();
           return;
         }
         var speed = 50 + Math.round(Math.random()*50);
+        total += speed;
+        counter++;
+        if(counter==6){
+          midtime = new Date().getTime();
+        }
         recorder(speed, function(){
-          counter++;
           setTimeout(dorecord, 100);
         })
 

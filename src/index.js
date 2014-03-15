@@ -5,6 +5,8 @@ var through = require('through');
 var tools = require('./tools');
 
 function Lem(db, options){
+	var self = this
+
 	EventEmitter.call(this)
 
 	if(!db){
@@ -12,9 +14,6 @@ function Lem(db, options){
 	}
 
 	options = options || {}
-	options.sep = options.sep || '\xff'
-
-	var self = this
 
 	this._db = db
 	this._options = options
@@ -47,24 +46,31 @@ Lem.prototype.remove = function(key, done){
 Lem.prototype.recorder = function(path){
 	var self = this;
 	path = tools.parsedots('values.' + (path || ''));
-	return function(value, done){
-		self._db.put(path, value.toString(), done);
+	return function(value, timestamp, done){
+		if(arguments.length<=2){
+			done = timestamp;
+			timestamp = new Date().getTime();
+		}
+		var valpath = path + '~' + timestamp;
+		self._db.put(valpath, value.toString(), done);
 	}
 }
 
-Lem.prototype.valuestream = function(path, start, end){
-	var keys = tools.querykeys(path, start, end);
-	console.log('-------------------------------------------');
-	console.dir(keys);
-	/*
-	return this._db.createReadStream({
+Lem.prototype.valuestream = function(path, query){
+	query = query || {};
+	var dotpath = 'values.' + (path || '');
+	var range = tools.querykeys(dotpath, query.start, query.end);
+
+	return this._db.createReadStream(range)
+	.pipe(through(function(data){
 		
-		keyEncoding:'ascii',
-		start:start,
-		end:end
+		var parts = data.key.toString().split('~');
+
+		data.key = parseInt(parts[parts.length-1]);
+		data.value = parseFloat(data.value.toString());
 		
-	})
-	*/
+		this.queue(data);
+	}))
 }
 
 Lem.prototype.keys = function(path){
