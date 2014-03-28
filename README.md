@@ -136,7 +136,7 @@ lemdb.valuestream('cars.red5.speed', {
 
 ## api
 
-## var lem = new Lem(leveldb);
+## var lemdb = lem(leveldb);
 
 Create a new lem database from the provided [leveldb](https://github.com/rvagg/node-levelup).  This can be a [level-sublevel](https://github.com/dominictarr/level-sublevel) so you can partition lem into an existing database.
 
