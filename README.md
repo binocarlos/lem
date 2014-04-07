@@ -1,7 +1,7 @@
 lem
 ===
 
-![lem logo](graphics/logosmall.png "Lem Logo")
+![lem logo](https://github.com/binocarlos/lem/raw/master/graphics/logosmall.png "Lem Logo")
 
 ![Build status](https://api.travis-ci.org/binocarlos/lem.png)
 

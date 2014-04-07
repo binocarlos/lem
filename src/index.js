@@ -15,8 +15,6 @@ module.exports = function(db, options){
 	return new Lem(db, options);
 }
 
-module.exports.tools = tools;
-
 function Lem(db, options){
 	var self = this
 
@@ -40,7 +38,7 @@ Lem.prototype.index = function(key, meta, done){
 	}
 
 	this.emit('index', key, meta);
-	this._db.put(tools.parsedots('keys.' + key), meta || '', done);
+	this._db.put('keys.' + key, meta || '', done);
 }
 
 Lem.prototype.remove = function(key, done){
@@ -50,13 +48,13 @@ Lem.prototype.remove = function(key, done){
 
 Lem.prototype.recorder = function(path){
 	var self = this;
-	path = tools.parsedots('values.' + (path || ''));
+	path = 'values.' + (path || '');
 	return function(value, timestamp, done){
 		if(arguments.length<=2){
 			done = timestamp;
 			timestamp = new Date().getTime();
 		}
-		var valpath = path + '~' + timestamp;
+		var valpath = path + '.' + timestamp;
 		self._db.put(valpath, value.toString(), done);
 	}
 }
@@ -84,7 +82,7 @@ Lem.prototype.keys = function(path){
 	var range = tools.querykeys(dotpath);
 	return this._db.createReadStream(range)
 	.pipe(through(function(data){
-		data.key = tools.getdots(data.key.toString()).substr(dotpath.length+1);
+		data.key = data.key.toString().substr(dotpath.length+1);
 		data.value = data.value.toString();
 		if(data.value.charAt(0)=='{'){
 			data.value = JSON.parse(data.value);

@@ -32,13 +32,6 @@ describe('lem', function(){
       lem.should.be.type('function');
     })
 
-    it('should expose the tools', function(){
-      lem.tools.parsedots.should.be.type('function');
-      lem.tools.getdots.should.be.type('function');
-      lem.tools.querykeys.should.be.type('function');
-      lem.tools.levelrange.should.be.type('function');
-    })
-
     it('should throw if no leveldb or options', function(){
       (function(){
         var lemdb = lem();
@@ -134,10 +127,10 @@ describe('lem', function(){
         },
 
         function(next){
-          hit[lem.tools.parsedots('keys.cars.red5.speed')].value.should.equal(10);
-          hit[lem.tools.parsedots('keys.cars.red5.address.postcode')].value.should.equal('sw10');
-          hit[lem.tools.parsedots('keys.cars.red5.height')].value.should.equal(11);
-          hit[lem.tools.parsedots('keys.cars.red5.weight')].value.should.equal(12);
+          hit['keys.cars.red5.speed'].value.should.equal(10);
+          hit['keys.cars.red5.address.postcode'].value.should.equal('sw10');
+          hit['keys.cars.red5.height'].value.should.equal(11);
+          hit['keys.cars.red5.weight'].value.should.equal(12);
           index['cars.red5.speed'].should.equal(10);
           next();
         }
@@ -151,7 +144,7 @@ describe('lem', function(){
 
     this.timeout(5000);
 
-    it('should save values', function(done){
+    it('should save and load values', function(done){
       var lemdb = lem(leveldb);
 
       var recorder = lemdb.recorder('cars.red5.speed');
