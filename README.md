@@ -136,7 +136,7 @@ lemdb.valuestream('cars.red5.speed', {
 
 ## api
 
-## var lemdb = lem(leveldb);
+#### `var lemdb = lem(leveldb);`
 
 Create a new lem database from the provided [leveldb](https://github.com/rvagg/node-levelup).  This can be a [level-sublevel](https://github.com/dominictarr/level-sublevel) so you can partition lem into an existing database.
 
@@ -148,7 +148,7 @@ var leveldb = level('/tmp/mylem');
 var lemdb = lem(leveldb);
 ```
 
-## lemdb.index(path, meta, done)
+#### `lemdb.index(path, meta, done)`
 
 Write a node and some meta data to the index. 
 
@@ -165,7 +165,7 @@ lemdb.index('myhouse.kitchen.fridge.temperature', '{"title":"Fridge Temp","owner
 lemdb.index('myhouse.kitchen.thermostat.temperature', '{"title":"Stat Temp","owner":344}');
 ```
 
-## lemdb.keys(path)
+#### `lemdb.keys(path)`
 
 keys returns a ReadStream of all keys in the index beneath the key you provide.
 
@@ -191,7 +191,7 @@ This outputs:
 }
 ```
 
-## lemdb.recorder(path)
+#### `lemdb.recorder(path)`
 
 A recorder is used to write time-series data to a node.
 
@@ -201,7 +201,7 @@ You create it with the path of the node:
 var recorder = lemdb.recorder('myhouse.kitchen.fridge.temperature');
 ```
 
-## recorder(value, [timestamp], [done])
+#### `recorder(value, [timestamp], [done])`
 
 The recorder itself is a function that you run with a value and optional timestamp and callback.
 
@@ -239,7 +239,7 @@ setInterval(function(){
 
 ## events
 
-### lemdb.on('index', function(key, meta){})
+#### `lemdb.on('index', function(key, meta){})`
 
 the 'index' event is emitted when a node is added to the index:
 
@@ -253,7 +253,7 @@ lemdb.on('index', function(key, meta){
 })
 ```
 
-### lemdb.on('data', function(key, value){})
+#### `lemdb.on('data', function(key, value){})`
 	
 This is a livestream from leveldb and so contains a full description of the operation:
 
