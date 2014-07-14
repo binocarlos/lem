@@ -66,8 +66,8 @@ Lem.prototype.valuestream = function(path, query){
 
 	return this._db.createReadStream(range)
 	.pipe(through(function(data){
-		
-		var parts = data.key.toString().split('~');
+
+		var parts = data.key.toString().split('.');
 
 		data.key = parseInt(parts[parts.length-1]);
 		data.value = parseFloat(data.value.toString());

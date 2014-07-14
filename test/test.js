@@ -116,7 +116,8 @@ describe('lem', function(){
 
           }).pipe(through(function(data){
 
-            typeof(data.key).should.equal('number')
+            var t = typeof(data.key)
+            t.should.equal('number')
             data.value.should.equal(10)
             done()
             
