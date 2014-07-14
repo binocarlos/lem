@@ -90,6 +90,41 @@ describe('lem', function(){
       
     })
 
+
+
+    it('should split the keys properly in a valuestream', function(done){
+      var lemdb = lem(leveldb);
+
+      var recorder = lemdb.recorder('cars.red4');
+
+
+      async.series([
+        function(next){
+
+          recorder(10, next)
+
+        },
+
+        function(next){
+
+          setTimeout(next, 100)
+          
+        },
+
+        function(next){
+          lemdb.valuestream('cars.red4', {
+
+          }).pipe(through(function(data){
+
+            typeof(data.key).should.equal('number')
+            data.value.should.equal(10)
+            done()
+            
+          }))
+        }
+      ], done)
+      
+    })
   })
 
   describe('events', function(){
