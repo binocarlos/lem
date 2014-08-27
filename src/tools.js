@@ -7,14 +7,13 @@ function levelrange(start, end){
 }
 
 function querykeys(path, starttime, endtime){
-	path += '.';
 	var start = path;
 	var end = path;
 	if(starttime){
-		start += starttime;
+		start = '.' + starttime;
 	}
 	if(endtime){
-		end += endtime;
+		end = '.' + endtime;
 	}
 	return levelrange(start, end);
 }
