@@ -10,10 +10,10 @@ function querykeys(path, starttime, endtime){
 	var start = path;
 	var end = path;
 	if(starttime){
-		start = '.' + starttime;
+		start += '.' + starttime;
 	}
 	if(endtime){
-		end = '.' + endtime;
+		end += '.' + endtime;
 	}
 	return levelrange(start, end);
 }
