@@ -145,21 +145,25 @@ describe('lem', function(){
         index[key] = data;
       })
 
+      function delayNext(next){
+        setTimeout(next, 10)
+      }
+
       async.series([
         function(next){
-          lemdb.index('cars.red5.speed', 10, next);
+          lemdb.index('cars.red5.speed', 10, delayNext(next));
         },
 
         function(next){
-          lemdb.index('cars.red5.address.postcode', 'sw10', next);
+          lemdb.index('cars.red5.address.postcode', 'sw10', delayNext(next));
         },
 
         function(next){
-          lemdb.index('cars.red5.height', 11, next);
+          lemdb.index('cars.red5.height', 11, delayNext(next));
         },
 
         function(next){
-          lemdb.index('cars.red5.weight', 12, next);
+          lemdb.index('cars.red5.weight', 12, delayNext(next));
         },
 
         function(next){
