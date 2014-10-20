@@ -21,7 +21,6 @@
     "mocha": "~1.14.0",
     "should": "~2.1.0",
     "wrench": "~1.5.8",
-    "through": "~2.3.4",
     "async": "~0.2.10",
     "hyperquest": "~0.2.0",
     "concat-stream": "~1.4.4"
@@ -33,6 +32,7 @@
   },
   "homepage": "https://github.com/binocarlos/lem",
   "dependencies": {
+    "through": "~2.3.4",
     "level": "~0.18.0",
     "level-live-stream": "~1.4.9"
   }
