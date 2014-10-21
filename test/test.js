@@ -47,9 +47,19 @@ describe('lem', function(){
 
   })
 
-
   describe('keys', function(){
     
+
+    it('should throw if no meta value supplied', function(done){
+      var lemdb = lem(leveldb);
+
+      (function(){
+        lemdb.index('cars.red5.speed', null);
+      }).should.throw('key and value must be supplied to lem.index()')
+
+      done()
+      
+    })
 
     it('should list all the nodes that have been indexed', function(done){
       var lemdb = lem(leveldb);
