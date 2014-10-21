@@ -32,13 +32,11 @@ function Lem(db, options){
 util.inherits(Lem, EventEmitter)
 
 Lem.prototype.index = function(key, meta, done){
-	if(arguments.length<=2){
-		done = meta;
-		meta = null;
+	if(!key || !meta){
+		throw new Error('key and value must be supplied to lem.index()')
 	}
-
 	this.emit('index', key, meta);
-	this._db.put('keys.' + key, meta || '', done);
+	this._db.put('keys.' + key, meta, done);
 }
 
 Lem.prototype.remove = function(key, done){
