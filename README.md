@@ -148,7 +148,7 @@ var leveldb = level('/tmp/mylem');
 var lemdb = lem(leveldb);
 ```
 
-#### `lemdb.index(path, meta, done)`
+#### `lemdb.index(path, meta, [done])`
 
 Write a node and some meta data to the index. 
 
