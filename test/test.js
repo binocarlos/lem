@@ -61,14 +61,16 @@ describe('lem', function(){
       
     })
 
-    it('should throw if no meta value supplied', function(done){
+    it('should emit an error if no meta value supplied', function(done){
       var lemdb = lem(leveldb);
 
-      (function(){
-        lemdb.index('cars.red5.speed', null);
-      }).should.throw('key and value must be supplied to lem.index()')
+      lemdb.on('error', function(err){
+        err.should.equal('key and value must be supplied to lem.index()')
+        done()
+      })
 
-      done()
+      
+      lemdb.index('cars.red5.speed', null);
       
     })
 

@@ -33,7 +33,8 @@ util.inherits(Lem, EventEmitter)
 
 Lem.prototype.index = function(key, meta, done){
 	if(!key || !meta){
-		throw new Error('key and value must be supplied to lem.index()')
+		this.emit('error', 'key and value must be supplied to lem.index()')
+		return
 	}
 	this.emit('index', key, meta);
 	this._db.put('keys.' + key, meta, done);
