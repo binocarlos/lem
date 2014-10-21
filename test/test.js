@@ -48,7 +48,18 @@ describe('lem', function(){
   })
 
   describe('keys', function(){
-    
+
+
+    it('should not throw if no callback is supplied', function(done){
+      var lemdb = lem(leveldb);
+
+      (function(){
+        lemdb.index('cars.red5.speed', 'apples');
+      }).should.not.throw()
+
+      done()
+      
+    })
 
     it('should throw if no meta value supplied', function(done){
       var lemdb = lem(leveldb);
