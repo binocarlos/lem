@@ -23,7 +23,7 @@ var level = require('level');
 var leveldb = level('/tmp/lemtest');
 
 // create a new lem store using the leveldb
-var lemdb = lem(db);
+var lemdb = lem(leveldb);
 
 // when nodes are indexed
 lemdb.on('index', function(key, meta){
