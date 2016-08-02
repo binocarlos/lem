@@ -3,7 +3,7 @@ lem
 
 ![lem logo](https://github.com/binocarlos/lem/raw/master/graphics/logosmall.png "Lem Logo")
 
-![Build status](https://api.travis-ci.org/binocarlos/lem.png)
+![Build status](https://travis-ci.org/binocarlos/lem.svg?branch=master)
 
 database for time-series data using LevelDB and node.js
 
