@@ -1,29 +1,20 @@
-var lem = require('../src/index');
-var level = require('level');
-var hyperquest = require('hyperquest');
-var concat = require('concat-stream');
-var through = require('through');
-var http = require('http');
-var async = require('async');
-var wrench = require('wrench');
+var lem = require('../src/index')
+var level    = require('level-test')({mem:true})
+var through = require('through')
+var async = require('async')
 
 describe('lem', function(){
 
   var leveldb;
 
   beforeEach(function(done){
-    this.timeout(1000);
-    wrench.rmdirSyncRecursive('/tmp/lemtesttempdb', true);
-    level('/tmp/lemtesttempdb', {}, function(err, ldb){
-      if (err) throw err
-      leveldb = ldb
-      done();
-    });
+    this.timeout(1000)
+    leveldb = level('lemtest')
+    done()
   })
 
   afterEach(function(done){
-    this.timeout(1000);
-    leveldb.close(done);
+    leveldb.close(done)
   })
 
   describe('constructor', function(){
