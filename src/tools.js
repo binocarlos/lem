@@ -1,6 +1,5 @@
 function levelrange(start, end){
 	return {
-		keyEncoding:'ascii',
 		start:start,
 		end:end + '\xff'
 	}
